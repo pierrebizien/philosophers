@@ -6,7 +6,7 @@
 /*   By: pbizien <pbizien@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/29 10:51:59 by pbizien           #+#    #+#             */
-/*   Updated: 2023/03/30 17:03:43 by pbizien          ###   ########.fr       */
+/*   Updated: 2023/03/30 18:55:15 by pbizien          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,37 +14,27 @@
 
 void	ft_think_n_eat(t_philo *tmp)
 {
-	pthread_mutex_lock(tmp->mutex_print);
-	printf("\e[31;49;1mIMESTAMP %d is THINKING\e[0m\n", tmp->num);
-	pthread_mutex_unlock(tmp->mutex_print);
-	if (tmp->num % 2 == 0)
-	{
-		pthread_mutex_lock(tmp->mutex_right);
-		pthread_mutex_lock(tmp->mutex_left);
-		
-		pthread_mutex_lock(tmp->mutex_print);
-		printf("\e[32;1mTIMESTAMP %d has taken a fork\e[0m\n", tmp->num);
-		printf("\e[34;49;1mTIMESTAMP %d is eating \e[0m\n", tmp->num);
-		pthread_mutex_unlock(tmp->mutex_print);
-		usleep(2000000);
-		pthread_mutex_unlock(tmp->mutex_left);
-		pthread_mutex_unlock(tmp->mutex_right);
-	}
+	ft_print_is_thinking(tmp);
 	if (tmp->num % 2 == 1)
 	{
+		pthread_mutex_lock(tmp->mutex_right);
+		pthread_mutex_lock(tmp->mutex_left);
+		ft_print_is_eating(tmp);
+		usleep(200);
+		pthread_mutex_unlock(tmp->mutex_left);
+		pthread_mutex_unlock(tmp->mutex_right);
+	}
+	if (tmp->num % 2 == 0)
+	{
 		pthread_mutex_lock(tmp->mutex_left);
 		pthread_mutex_lock(tmp->mutex_right);
-		pthread_mutex_lock(tmp->mutex_print);
-		printf("\e[32;1mTIMESTAMP %d has taken a fork\e[0m\n", tmp->num);
-		printf("\e[34;49;1mTIMESTAMP %d is eating \e[0m\n", tmp->num);
-		pthread_mutex_unlock(tmp->mutex_print);
-		usleep(2000000);
+		ft_print_is_eating(tmp);
+		usleep(200);
 		pthread_mutex_unlock(tmp->mutex_right);
 		pthread_mutex_unlock(tmp->mutex_left);
 	}
-		pthread_mutex_lock(tmp->mutex_print);
-		printf("\e[36;49;1mTIMESTAMP %d is sleeping \e[0m\n", tmp->num);
-		pthread_mutex_unlock(tmp->mutex_print);
+	ft_print_is_sleeping(tmp);
+	usleep(200);
 		
 	
 }
@@ -52,18 +42,15 @@ void	ft_think_n_eat(t_philo *tmp)
 void *routine(void *arg)
 {
 	t_philo *tmp;
+	struct timeval tv;
 
 	tmp = (t_philo *)arg;
-	
-	
-	// pthread_mutex_lock(tmp->mutex_print);
-	// printf("\e[35;40;1mhello world je suis le philo %d \e[0m\n", tmp->num);
-	// pthread_mutex_unlock(tmp->mutex_print);
-	// while (tmp->alive)
-	// {
-		
-	// 	ft_think_n_eat(tmp);
-	// }
+	gettimeofday(&tv, NULL);
+	tmp->data->ts = (tv.tv_sec * 1000 )+( tv.tv_usec / 1000);
+	while (tmp->alive)
+	{
+		ft_think_n_eat(tmp);
+	}
 	
 	return (NULL);
 }
@@ -169,6 +156,7 @@ t_philo	*ft_init(int nb, t_data *data, int *alive)
 	tmp->right_fork = &data->forks[0];
 	tmp->mutex_right = &data->mutex[0];
 	tmp->mutex_print = data->mutex_print;
+	tmp->data = data;
 	tmp->left_fork = &data->forks[nb - 1];
 	tmp->mutex_left = &data->mutex[nb - 1];
 	i = 1;
@@ -182,6 +170,7 @@ t_philo	*ft_init(int nb, t_data *data, int *alive)
 		tmp->alive = alive;
 		tmp->mutex_print = data->mutex_print;
 		tmp->right_fork = &data->forks[i];
+		tmp->data = data;
 		tmp->mutex_right = &data->mutex[i];
 		tmp->left_fork = &data->forks[i - 1];
 		tmp->mutex_left = &data->mutex[i - 1];
@@ -203,11 +192,12 @@ int	main(int ac, char**av)
 	if (ft_create_thread(&data) != 0)
 		return (1);
 	tmp = data.philos;
-	while (tmp)
-	{
-		fprintf(stderr, "num vaut %d\n", tmp->num);
-		tmp = tmp->next;
-	}
+	// while (tmp)
+	// {
+	// 	fprintf(stderr, "Adresse gauche du %d vaut %p\n", tmp->num, tmp->mutex_left);
+	// 	fprintf(stderr, "Adresse droite du %d vaut %p\n", tmp->num, tmp->mutex_right);
+	// 	tmp = tmp->next;
+	// }
 	free(data.forks);
 	free(data.pt);
 	ft_free_list(data.philos);

@@ -6,7 +6,7 @@
 /*   By: pbizien <pbizien@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/29 10:53:57 by pbizien           #+#    #+#             */
-/*   Updated: 2023/03/30 16:40:59 by pbizien          ###   ########.fr       */
+/*   Updated: 2023/03/30 18:53:22 by pbizien          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ typedef struct	s_philo
 	int				*left_fork;
 	struct s_philo	*next;
 	int				*alive;
+	struct s_data	*data;
 	
 }				t_philo;
 
@@ -46,11 +47,16 @@ typedef struct	s_data
 	pthread_mutex_t	*mutex;
 	pthread_mutex_t	*mutex_print;
 	t_philo			*philos;
+	long		ts;
 	int				i;
 	
 }				t_data;
 
 int	ft_putstr_fd(char *str, int fd);
 void	ft_free_list(t_philo *begin);
+void	ft_print_is_eating(t_philo *tmp);
+void	ft_print_is_sleeping(t_philo *tmp);
+void	ft_print_is_thinking(t_philo *tmp);
+
 
 #endif

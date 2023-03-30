@@ -1,6 +1,7 @@
 SRCS += main.c
 SRCS += utils.c
 SRCS += free.c
+SRCS += print.c
 
 OBJS = ${SRCS:.c=.o}
 
