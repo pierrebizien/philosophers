@@ -17,3 +17,9 @@ all: ${NAME}
 
 ${NAME}: ${OBJS}
 	${GCC} ${FLAGS} ${OBJS} -o ${NAME}
+
+clean:
+	rm -rf ${OBJS}
+
+fclean:
+	rm -rf ${NAME}
