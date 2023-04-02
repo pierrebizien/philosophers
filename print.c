@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   print.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pbizien <pbizien@student.42.fr>            +#+  +:+       +#+        */
+/*   By: pierrebizien <pierrebizien@student.42.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/30 17:32:13 by pbizien           #+#    #+#             */
-/*   Updated: 2023/03/30 18:53:02 by pbizien          ###   ########.fr       */
+/*   Updated: 2023/03/31 14:52:31 by pierrebizie      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,10 @@ void	ft_print_is_eating(t_philo *tmp)
 {
 	struct timeval tv;
 	
-	gettimeofday(&tv, NULL);
 	
 	pthread_mutex_lock(tmp->mutex_print);
+	gettimeofday(&tv, NULL);
+	tmp->last_meal = (tv.tv_usec) + (tv.tv_sec * 1000);
 	printf("\e[32;1m%ld %d has taken a fork\e[0m\n", ((tv.tv_usec / 1000) + (tv.tv_sec * 1000) - tmp->data->ts) ,tmp->num);
 	printf("\e[34;49;1m%ld %d is eating \e[0m\n", ((tv.tv_usec / 1000) + (tv.tv_sec * 1000) - tmp->data->ts), tmp->num);
 	pthread_mutex_unlock(tmp->mutex_print);

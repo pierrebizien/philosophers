@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philo.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pbizien <pbizien@student.42.fr>            +#+  +:+       +#+        */
+/*   By: pierrebizien <pierrebizien@student.42.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/29 10:53:57 by pbizien           #+#    #+#             */
-/*   Updated: 2023/03/30 18:53:22 by pbizien          ###   ########.fr       */
+/*   Updated: 2023/03/31 18:03:22 by pierrebizie      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,10 +19,10 @@
 # include <pthread.h>
 # include <stdlib.h>
 
-# define NB_PHILO 4
+# define NB_PHILO 2
 # define TIME_TO_DIE 20000
-# define TIME_TO_EAT 20000
-# define TIME_TO_SLEEP 20000
+# define TIME_TO_EAT 200
+# define TIME_TO_SLEEP 200
 # define MIN_EAT 1
 
 typedef struct	s_philo
@@ -36,6 +36,7 @@ typedef struct	s_philo
 	struct s_philo	*next;
 	int				*alive;
 	struct s_data	*data;
+	long int		last_meal;
 	
 }				t_philo;
 

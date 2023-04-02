@@ -14,13 +14,15 @@ FLAGS = -Wall -Werror -Wextra
 all: ${NAME}
 
 .c.o:
-	${GCC} -g ${FLAGS} -c -I. $< -o ${<:.c=.o}
+	${GCC} -g ${FLAGS} -c -I -pthread $< -o ${<:.c=.o}
 
 ${NAME}: ${OBJS}
-	${GCC} ${FLAGS} ${OBJS} -o ${NAME}
+	${GCC} ${FLAGS} -pthread ${OBJS} -o ${NAME}
 
 clean:
 	rm -rf ${OBJS}
 
 fclean:
 	rm -rf ${NAME}
+
+re: fclean all

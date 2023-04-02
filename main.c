@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pbizien <pbizien@student.42.fr>            +#+  +:+       +#+        */
+/*   By: pierrebizien <pierrebizien@student.42.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/29 10:51:59 by pbizien           #+#    #+#             */
-/*   Updated: 2023/03/30 18:55:15 by pbizien          ###   ########.fr       */
+/*   Updated: 2023/03/31 18:08:39 by pierrebizie      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ void	ft_think_n_eat(t_philo *tmp)
 		pthread_mutex_lock(tmp->mutex_right);
 		pthread_mutex_lock(tmp->mutex_left);
 		ft_print_is_eating(tmp);
-		usleep(200);
+		usleep(TIME_TO_EAT);
 		pthread_mutex_unlock(tmp->mutex_left);
 		pthread_mutex_unlock(tmp->mutex_right);
 	}
@@ -29,14 +29,12 @@ void	ft_think_n_eat(t_philo *tmp)
 		pthread_mutex_lock(tmp->mutex_left);
 		pthread_mutex_lock(tmp->mutex_right);
 		ft_print_is_eating(tmp);
-		usleep(200);
+		usleep(TIME_TO_EAT);
 		pthread_mutex_unlock(tmp->mutex_right);
 		pthread_mutex_unlock(tmp->mutex_left);
 	}
 	ft_print_is_sleeping(tmp);
-	usleep(200);
-		
-	
+	usleep(TIME_TO_SLEEP);
 }
 
 void *routine(void *arg)
@@ -46,13 +44,41 @@ void *routine(void *arg)
 
 	tmp = (t_philo *)arg;
 	gettimeofday(&tv, NULL);
-	tmp->data->ts = (tv.tv_sec * 1000 )+( tv.tv_usec / 1000);
-	while (tmp->alive)
+	tmp->data->ts = (tv.tv_sec * 1000 ) + ( tv.tv_usec / 1000);
+	tmp->last_meal = tmp->data->ts;
+	while (tmp->bool_start == 0)
+	{
+		
+	}
+	while (1)
 	{
 		ft_think_n_eat(tmp);
 	}
 	
 	return (NULL);
+}
+
+void	*ft_check_die(void *arg)
+{
+	int	i;
+	struct timeval tv;
+	long int tmp_time;
+	t_philo *tmp;
+
+	while (1)
+	{
+		i = 0;
+		tmp = (t_philo *)arg;
+		while (i < NB_PHILO)
+		{
+			gettimeofday(&tv, NULL);
+			tmp_time = tv.tv_usec + tv.tv_sec * 1000;
+			if (tmp_time - tmp->last_meal > TIME_TO_DIE)
+				return (printf("PHILO %d est dead\n", tmp->num), exit(0), NULL);
+			 i++;
+		}
+		
+	}
 }
 int	ft_create_thread(t_data *data)
 {
@@ -73,6 +99,9 @@ int	ft_create_thread(t_data *data)
 		tmp = tmp->next;
 		i++;
 	}
+	tmp = data->philos;
+	if (pthread_create(&data->pt[i], NULL, &ft_check_die, tmp) != 0)
+			ft_putstr_fd("Gros pb de creation brrr brrr\n", 2);
 	i = 0;
 	while (i < NB_PHILO)
 	{
@@ -120,9 +149,7 @@ pthread_mutex_t	*ft_create_mutex(int nb)
 pthread_mutex_t	*ft_create_mutex_print()
 {
 	pthread_mutex_t	*output;
-	int	j;
 	
-	j = 0;
 	output = malloc(sizeof(pthread_mutex_t));
 	if (!output)
 		return (NULL);
@@ -185,13 +212,13 @@ int	main(int ac, char**av)
 	(void)ac;
 	(void)av;
 	t_data data;
-	t_philo *tmp;
+	// t_philo *tmp;
 	int		alive;
 	
 	data.philos = ft_init(NB_PHILO, &data, &alive);
 	if (ft_create_thread(&data) != 0)
 		return (1);
-	tmp = data.philos;
+	// tmp = data.philos;
 	// while (tmp)
 	// {
 	// 	fprintf(stderr, "Adresse gauche du %d vaut %p\n", tmp->num, tmp->mutex_left);
