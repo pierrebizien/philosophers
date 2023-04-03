@@ -6,7 +6,7 @@
 /*   By: pierrebizien <pierrebizien@student.42.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/29 10:53:57 by pbizien           #+#    #+#             */
-/*   Updated: 2023/03/31 18:03:22 by pierrebizie      ###   ########.fr       */
+/*   Updated: 2023/04/03 11:05:06 by pierrebizie      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ typedef struct	s_data
 	pthread_mutex_t	*mutex;
 	pthread_mutex_t	*mutex_print;
 	t_philo			*philos;
+	int				*bool_start;
 	long		ts;
 	int				i;
 	

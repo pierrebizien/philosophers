@@ -6,7 +6,7 @@
 /*   By: pierrebizien <pierrebizien@student.42.f    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/29 10:51:59 by pbizien           #+#    #+#             */
-/*   Updated: 2023/03/31 18:08:39 by pierrebizie      ###   ########.fr       */
+/*   Updated: 2023/04/03 11:33:25 by pierrebizie      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,17 +44,17 @@ void *routine(void *arg)
 
 	tmp = (t_philo *)arg;
 	gettimeofday(&tv, NULL);
-	tmp->data->ts = (tv.tv_sec * 1000 ) + ( tv.tv_usec / 1000);
+	tmp->data->ts = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
 	tmp->last_meal = tmp->data->ts;
-	while (tmp->bool_start == 0)
+	while (1)
 	{
-		
+		if (*(tmp->data->bool_start) != 0)
+			break ;
 	}
 	while (1)
 	{
 		ft_think_n_eat(tmp);
 	}
-	
 	return (NULL);
 }
 
@@ -100,9 +100,11 @@ int	ft_create_thread(t_data *data)
 		i++;
 	}
 	tmp = data->philos;
+	*(data->bool_start) = 1;
 	if (pthread_create(&data->pt[i], NULL, &ft_check_die, tmp) != 0)
 			ft_putstr_fd("Gros pb de creation brrr brrr\n", 2);
 	i = 0;
+	
 	while (i < NB_PHILO)
 	{
 		if (pthread_join(data->pt[i], NULL) != 0)
@@ -164,6 +166,10 @@ t_philo	*ft_init(int nb, t_data *data, int *alive)
 	int	i;
 
 	*alive = 1;
+	data->bool_start = malloc(sizeof(int));
+	if (!data->bool_start)
+		return (NULL);
+	*data->bool_start = 0;
 	data->i = 0;
 	data->forks = ft_create_forks(nb);
 	if (!data->forks)
@@ -177,6 +183,7 @@ t_philo	*ft_init(int nb, t_data *data, int *alive)
 	tmp = malloc(sizeof(t_philo));
 	if (!tmp)	
 		return (free(data->forks), free(data->mutex), free(data->mutex_print), NULL);
+	
 	output = tmp;
 	tmp->num = 1;
 	tmp->alive = alive;
@@ -214,6 +221,7 @@ int	main(int ac, char**av)
 	t_data data;
 	// t_philo *tmp;
 	int		alive;
+	
 	
 	data.philos = ft_init(NB_PHILO, &data, &alive);
 	if (ft_create_thread(&data) != 0)
