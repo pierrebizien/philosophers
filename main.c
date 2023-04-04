@@ -3,54 +3,57 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pierrebizien <pierrebizien@student.42.f    +#+  +:+       +#+        */
+/*   By: pbizien <pbizien@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/29 10:51:59 by pbizien           #+#    #+#             */
-/*   Updated: 2023/04/03 11:33:25 by pierrebizie      ###   ########.fr       */
+/*   Updated: 2023/04/04 11:50:29 by pbizien          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+
+
 
 void	ft_think_n_eat(t_philo *tmp)
 {
 	ft_print_is_thinking(tmp);
 	if (tmp->num % 2 == 1)
 	{
+		usleep(TIME_TO_EAT - TIME_TO_EAT / 10);
+		fprintf(stderr, "philo %d est bloque sur fouchette droite\n", tmp->num);
 		pthread_mutex_lock(tmp->mutex_right);
+		fprintf(stderr, "philo %d a passe sur fouchette droite\n", tmp->num);
 		pthread_mutex_lock(tmp->mutex_left);
+		fprintf(stderr, "philo %d a passe sur fouchette gauche\n", tmp->num);
 		ft_print_is_eating(tmp);
-		usleep(TIME_TO_EAT);
 		pthread_mutex_unlock(tmp->mutex_left);
 		pthread_mutex_unlock(tmp->mutex_right);
 	}
 	if (tmp->num % 2 == 0)
 	{
+		fprintf(stderr, "philo %d est bloque sur fouchette gauche\n", tmp->num);
 		pthread_mutex_lock(tmp->mutex_left);
+		fprintf(stderr, "philo %d a passe sur fouchette gauche\n", tmp->num);
 		pthread_mutex_lock(tmp->mutex_right);
+		fprintf(stderr, "philo %d a passe sur fouchette droite\n", tmp->num);
 		ft_print_is_eating(tmp);
-		usleep(TIME_TO_EAT);
 		pthread_mutex_unlock(tmp->mutex_right);
 		pthread_mutex_unlock(tmp->mutex_left);
 	}
 	ft_print_is_sleeping(tmp);
-	usleep(TIME_TO_SLEEP);
 }
 
 void *routine(void *arg)
 {
 	t_philo *tmp;
-	struct timeval tv;
 
 	tmp = (t_philo *)arg;
-	gettimeofday(&tv, NULL);
-	tmp->data->ts = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
-	tmp->last_meal = tmp->data->ts;
 	while (1)
 	{
 		if (*(tmp->data->bool_start) != 0)
 			break ;
 	}
+	tmp->last_meal = tmp->data->ts;
 	while (1)
 	{
 		ft_think_n_eat(tmp);
@@ -61,21 +64,27 @@ void *routine(void *arg)
 void	*ft_check_die(void *arg)
 {
 	int	i;
-	struct timeval tv;
-	long int tmp_time;
+	long long tmp_time;
 	t_philo *tmp;
 
+	tmp = (t_philo *)arg;
+	while (1)
+	{
+		if (tmp->data->bool_start != 0)
+			break;
+	}
+	usleep(100);
 	while (1)
 	{
 		i = 0;
 		tmp = (t_philo *)arg;
 		while (i < NB_PHILO)
 		{
-			gettimeofday(&tv, NULL);
-			tmp_time = tv.tv_usec + tv.tv_sec * 1000;
+			tmp_time = ft_get_time();
 			if (tmp_time - tmp->last_meal > TIME_TO_DIE)
-				return (printf("PHILO %d est dead\n", tmp->num), exit(0), NULL);
+				return (printf("%lld PHILO %d est dead\n", tmp_time - tmp->last_meal, tmp->num), exit(0), NULL);
 			 i++;
+			 tmp = tmp->next;
 		}
 		
 	}
@@ -95,11 +104,11 @@ int	ft_create_thread(t_data *data)
 	{
 		if (pthread_create(&data->pt[i], NULL, &routine, tmp) != 0)
 			ft_putstr_fd("Gros pb de creation brrr brrr\n", 2);
-		usleep(100);
 		tmp = tmp->next;
 		i++;
 	}
 	tmp = data->philos;
+	
 	*(data->bool_start) = 1;
 	if (pthread_create(&data->pt[i], NULL, &ft_check_die, tmp) != 0)
 			ft_putstr_fd("Gros pb de creation brrr brrr\n", 2);
@@ -170,6 +179,7 @@ t_philo	*ft_init(int nb, t_data *data, int *alive)
 	if (!data->bool_start)
 		return (NULL);
 	*data->bool_start = 0;
+	data->ts = ft_get_time();
 	data->i = 0;
 	data->forks = ft_create_forks(nb);
 	if (!data->forks)
@@ -191,6 +201,7 @@ t_philo	*ft_init(int nb, t_data *data, int *alive)
 	tmp->mutex_right = &data->mutex[0];
 	tmp->mutex_print = data->mutex_print;
 	tmp->data = data;
+	tmp->last_meal = data->ts;
 	tmp->left_fork = &data->forks[nb - 1];
 	tmp->mutex_left = &data->mutex[nb - 1];
 	i = 1;
@@ -207,6 +218,7 @@ t_philo	*ft_init(int nb, t_data *data, int *alive)
 		tmp->data = data;
 		tmp->mutex_right = &data->mutex[i];
 		tmp->left_fork = &data->forks[i - 1];
+		tmp->last_meal = data->ts;
 		tmp->mutex_left = &data->mutex[i - 1];
 		i++;
 	}
@@ -226,13 +238,6 @@ int	main(int ac, char**av)
 	data.philos = ft_init(NB_PHILO, &data, &alive);
 	if (ft_create_thread(&data) != 0)
 		return (1);
-	// tmp = data.philos;
-	// while (tmp)
-	// {
-	// 	fprintf(stderr, "Adresse gauche du %d vaut %p\n", tmp->num, tmp->mutex_left);
-	// 	fprintf(stderr, "Adresse droite du %d vaut %p\n", tmp->num, tmp->mutex_right);
-	// 	tmp = tmp->next;
-	// }
 	free(data.forks);
 	free(data.pt);
 	ft_free_list(data.philos);

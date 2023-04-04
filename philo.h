@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   philo.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pierrebizien <pierrebizien@student.42.f    +#+  +:+       +#+        */
+/*   By: pbizien <pbizien@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/29 10:53:57 by pbizien           #+#    #+#             */
-/*   Updated: 2023/04/03 11:05:06 by pierrebizie      ###   ########.fr       */
+/*   Updated: 2023/04/04 11:52:02 by pbizien          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,10 +19,10 @@
 # include <pthread.h>
 # include <stdlib.h>
 
-# define NB_PHILO 2
-# define TIME_TO_DIE 20000
-# define TIME_TO_EAT 200
-# define TIME_TO_SLEEP 200
+# define NB_PHILO 4
+# define TIME_TO_DIE 402000
+# define TIME_TO_EAT 200000
+# define TIME_TO_SLEEP 200000
 # define MIN_EAT 1
 
 typedef struct	s_philo
@@ -36,7 +36,7 @@ typedef struct	s_philo
 	struct s_philo	*next;
 	int				*alive;
 	struct s_data	*data;
-	long int		last_meal;
+	long long		last_meal;
 	
 }				t_philo;
 
@@ -49,7 +49,7 @@ typedef struct	s_data
 	pthread_mutex_t	*mutex_print;
 	t_philo			*philos;
 	int				*bool_start;
-	long		ts;
+	long long		ts;
 	int				i;
 	
 }				t_data;
@@ -59,6 +59,8 @@ void	ft_free_list(t_philo *begin);
 void	ft_print_is_eating(t_philo *tmp);
 void	ft_print_is_sleeping(t_philo *tmp);
 void	ft_print_is_thinking(t_philo *tmp);
+long long ft_get_time();
+
 
 
 #endif
