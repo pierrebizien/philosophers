@@ -6,7 +6,7 @@
 /*   By: pbizien <pbizien@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/29 10:53:57 by pbizien           #+#    #+#             */
-/*   Updated: 2023/04/04 15:41:18 by pbizien          ###   ########.fr       */
+/*   Updated: 2023/04/04 19:30:03 by pbizien          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,10 @@
 # include <pthread.h>
 # include <stdlib.h>
 
-# define NB_PHILO 4
-# define TIME_TO_DIE 402
+# define NB_PHILO 200
+# define TIME_TO_DIE 420
 # define TIME_TO_EAT 200
+# define TIME_TO_THINK 195
 # define TIME_TO_SLEEP 200
 # define MIN_EAT 1
 
@@ -33,6 +34,7 @@ typedef struct	s_philo
 	pthread_mutex_t	*mutex_left;
 	pthread_mutex_t	*mutex_print;
 	int				*left_fork;
+	long long		start_time;
 	struct s_philo	*next;
 	int				*alive;
 	struct s_data	*data;
@@ -59,7 +61,8 @@ int	ft_putstr_fd(char *str, int fd);
 void	ft_free_list(t_philo *begin);
 void	ft_print_is_eating(t_philo *tmp);
 void	ft_print_is_sleeping(t_philo *tmp);
-void	ft_print_is_thinking(t_philo *tmp);
+void	ft_print_is_thinking_odd(t_philo *tmp);
+void	ft_print_is_thinking_even(t_philo *tmp);
 long long ft_get_time();
 
 
