@@ -6,7 +6,7 @@
 /*   By: pbizien <pbizien@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/29 10:51:59 by pbizien           #+#    #+#             */
-/*   Updated: 2023/04/04 14:10:36 by pbizien          ###   ########.fr       */
+/*   Updated: 2023/04/04 15:40:43 by pbizien          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,22 +20,16 @@ void	ft_think_n_eat(t_philo *tmp)
 	if (tmp->num % 2 == 1)
 	{
 		usleep(TIME_TO_EAT - TIME_TO_EAT / 10);
-		// fprintf(stderr, "philo %d est bloque sur fouchette droite\n", tmp->num);
 		pthread_mutex_lock(tmp->mutex_right);
-		// fprintf(stderr, "philo %d a passe sur fouchette droite\n", tmp->num);
 		pthread_mutex_lock(tmp->mutex_left);
-		// fprintf(stderr, "philo %d a passe sur fouchette gauche\n", tmp->num);
 		ft_print_is_eating(tmp);
 		pthread_mutex_unlock(tmp->mutex_left);
 		pthread_mutex_unlock(tmp->mutex_right);
 	}
 	if (tmp->num % 2 == 0)
 	{
-		// fprintf(stderr, "philo %d est bloque sur fouchette gauche\n", tmp->num);
 		pthread_mutex_lock(tmp->mutex_left);
-		// fprintf(stderr, "philo %d a passe sur fouchette gauche\n", tmp->num);
 		pthread_mutex_lock(tmp->mutex_right);
-		// fprintf(stderr, "philo %d a passe sur fouchette droite\n", tmp->num);
 		ft_print_is_eating(tmp);
 		pthread_mutex_unlock(tmp->mutex_right);
 		pthread_mutex_unlock(tmp->mutex_left);
@@ -82,7 +76,10 @@ void	*ft_check_die(void *arg)
 		{
 			tmp_time = ft_get_time();
 			if (tmp_time - tmp->last_meal >= TIME_TO_DIE)
-				return (printf("%lld PHILO %d est dead\n", tmp_time - tmp->data->ts, tmp->num), exit(0), NULL);
+			{
+				tmp->data->dead = 1;
+				return (printf("\e[31;1m%lld PHILO %d est dead\e\n", tmp_time - tmp->data->ts, tmp->num), NULL);
+			}
 			 i++;
 			 tmp = tmp->next;
 		}
@@ -112,12 +109,12 @@ int	ft_create_thread(t_data *data)
 	*(data->bool_start) = 1;
 	ft_check_die(tmp);
 	i = 0;
-	while (i < NB_PHILO)
-	{
-		if (pthread_join(data->pt[i], NULL) != 0)
-			ft_putstr_fd("Gros pb de creation brrr brrr\n", 2);
-		i++;
-	}
+	// while (i < NB_PHILO)
+	// {
+	// 	if (pthread_join(data->pt[i], NULL) != 0)
+	// 		ft_putstr_fd("Gros pb de creation brrr brrr\n", 2);
+	// 	i++;
+	// }
 	return (0);
 }
 
@@ -173,6 +170,7 @@ t_philo	*ft_init(int nb, t_data *data, int *alive)
 	int	i;
 
 	*alive = 1;
+	data->dead = 0;
 	data->bool_start = malloc(sizeof(int));
 	if (!data->bool_start)
 		return (NULL);

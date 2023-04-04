@@ -6,7 +6,7 @@
 /*   By: pbizien <pbizien@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/29 10:53:57 by pbizien           #+#    #+#             */
-/*   Updated: 2023/04/04 14:03:32 by pbizien          ###   ########.fr       */
+/*   Updated: 2023/04/04 15:41:18 by pbizien          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@
 # include <stdlib.h>
 
 # define NB_PHILO 4
-# define TIME_TO_DIE 401
+# define TIME_TO_DIE 402
 # define TIME_TO_EAT 200
 # define TIME_TO_SLEEP 200
 # define MIN_EAT 1
@@ -44,6 +44,7 @@ typedef struct	s_philo
 typedef struct	s_data
 {
 	int				*forks;
+	int				dead;
 	pthread_t		*pt;
 	pthread_mutex_t	*mutex;
 	pthread_mutex_t	*mutex_print;
