@@ -6,7 +6,7 @@
 /*   By: pbizien <pbizien@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/29 10:51:59 by pbizien           #+#    #+#             */
-/*   Updated: 2023/04/04 19:31:19 by pbizien          ###   ########.fr       */
+/*   Updated: 2023/04/05 11:25:04 by pbizien          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,15 +16,15 @@
 
 void	ft_think_n_eat_even(t_philo *tmp)
 {
-	// struct timeval tv;
+	struct timeval tv;
 	
 	if (tmp->num % 2 == 1)
 	{
 		pthread_mutex_lock(tmp->mutex_right);
-		// pthread_mutex_lock(tmp->mutex_print);
-		// gettimeofday(&tv, NULL);
-		// printf("\e[32;1m%lld %d has taken a right fork %p\e[0m\n", (ft_get_time() - tmp->data->ts), tmp->num, tmp->mutex_right);
-		// pthread_mutex_unlock(tmp->mutex_print);
+		pthread_mutex_lock(tmp->mutex_print);
+		gettimeofday(&tv, NULL);
+		printf("\e[32;1m%lld %d has taken a fork\e[0m\n", (ft_get_time() - tmp->data->ts), tmp->num);
+		pthread_mutex_unlock(tmp->mutex_print);
 		pthread_mutex_lock(tmp->mutex_left);
 		ft_print_is_eating(tmp);
 		pthread_mutex_unlock(tmp->mutex_left);
@@ -33,10 +33,10 @@ void	ft_think_n_eat_even(t_philo *tmp)
 	if (tmp->num % 2 == 0)
 	{
 		pthread_mutex_lock(tmp->mutex_left);
-		// pthread_mutex_lock(tmp->mutex_print);
-		// gettimeofday(&tv, NULL);
-		// // printf("\e[32;1m%lld %d has taken a left fork %p\e[0m\n", (ft_get_time() - tmp->data->ts), tmp->num, tmp->mutex_left);
-		// pthread_mutex_unlock(tmp->mutex_print);
+		pthread_mutex_lock(tmp->mutex_print);
+		gettimeofday(&tv, NULL);
+		printf("\e[32;1m%lld %d has taken a fork\e[0m\n", (ft_get_time() - tmp->data->ts), tmp->num);
+		pthread_mutex_unlock(tmp->mutex_print);
 		pthread_mutex_lock(tmp->mutex_right);
 		ft_print_is_eating(tmp);
 		pthread_mutex_unlock(tmp->mutex_right);
@@ -48,10 +48,16 @@ void	ft_think_n_eat_even(t_philo *tmp)
 
 void	ft_think_n_eat_odd(t_philo *tmp)
 {
+	struct timeval tv;
+
 	if (tmp->num % 2 == 1)
 	{
 		pthread_mutex_lock(tmp->mutex_right);
 		pthread_mutex_lock(tmp->mutex_left);
+		pthread_mutex_lock(tmp->mutex_print);
+		gettimeofday(&tv, NULL);
+		printf("\e[32;1m%lld %d has taken a fork\e[0m\n", (ft_get_time() - tmp->data->ts), tmp->num);
+		pthread_mutex_unlock(tmp->mutex_print);
 		ft_print_is_eating(tmp);
 		pthread_mutex_unlock(tmp->mutex_left);
 		pthread_mutex_unlock(tmp->mutex_right);
@@ -60,6 +66,10 @@ void	ft_think_n_eat_odd(t_philo *tmp)
 	{
 		pthread_mutex_lock(tmp->mutex_left);
 		pthread_mutex_lock(tmp->mutex_right);
+		pthread_mutex_lock(tmp->mutex_print);
+		gettimeofday(&tv, NULL);
+		printf("\e[32;1m%lld %d has taken a fork\e[0m\n", (ft_get_time() - tmp->data->ts), tmp->num);
+		pthread_mutex_unlock(tmp->mutex_print);
 		ft_print_is_eating(tmp);
 		pthread_mutex_unlock(tmp->mutex_right);
 		pthread_mutex_unlock(tmp->mutex_left);
@@ -110,6 +120,11 @@ void	*ft_check_die(void *arg)
 		while (i < NB_PHILO)
 		{
 			tmp_time = ft_get_time();
+			if (tmp->count_eat >= MAX_EAT)
+			{
+				tmp->data->dead = 1;
+				return (NULL);
+			}
 			if (tmp_time - tmp->last_meal >= TIME_TO_DIE)
 			{
 				tmp->data->dead = 1;
@@ -118,6 +133,7 @@ void	*ft_check_die(void *arg)
 				fprintf(stderr, "LE MUTEX DE GAUCHE EST %d\n", pthread_mutex_trylock(tmp->mutex_left));
 				return (NULL);
 			}
+			
 			 i++;
 			 tmp = tmp->next;
 		}
@@ -229,6 +245,7 @@ t_philo	*ft_init(int nb, t_data *data, int *alive)
 	tmp->mutex_right = &data->mutex[0];
 	tmp->mutex_print = data->mutex_print;
 	tmp->data = data;
+	tmp->count_eat = 0;
 	tmp->start_time = data->ts; // gerer nb de filo
 	tmp->last_meal = data->ts;
 	tmp->left_fork = &data->forks[nb - 1];
@@ -245,6 +262,7 @@ t_philo	*ft_init(int nb, t_data *data, int *alive)
 		tmp->mutex_print = data->mutex_print;
 		tmp->right_fork = &data->forks[i];
 		tmp->data = data;
+		tmp->count_eat = 0;
 		tmp->start_time = data->ts;
 		tmp->mutex_right = &data->mutex[i];
 		tmp->left_fork = &data->forks[i - 1];
