@@ -6,7 +6,7 @@
 /*   By: pbizien <pbizien@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/29 10:51:59 by pbizien           #+#    #+#             */
-/*   Updated: 2023/04/05 11:25:04 by pbizien          ###   ########.fr       */
+/*   Updated: 2023/04/05 15:41:44 by pbizien          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,19 +14,20 @@
 
 
 
-void	ft_think_n_eat_even(t_philo *tmp)
+int	ft_think_n_eat_even(t_philo *tmp)
 {
 	struct timeval tv;
-	
 	if (tmp->num % 2 == 1)
 	{
+		printf("\e[32;1m%lld %d avant premier mutex\e[0m\n", (ft_get_time() - tmp->data->ts), tmp->num);
 		pthread_mutex_lock(tmp->mutex_right);
 		pthread_mutex_lock(tmp->mutex_print);
 		gettimeofday(&tv, NULL);
 		printf("\e[32;1m%lld %d has taken a fork\e[0m\n", (ft_get_time() - tmp->data->ts), tmp->num);
 		pthread_mutex_unlock(tmp->mutex_print);
 		pthread_mutex_lock(tmp->mutex_left);
-		ft_print_is_eating(tmp);
+		if (ft_print_is_eating(tmp))
+			return (1);
 		pthread_mutex_unlock(tmp->mutex_left);
 		pthread_mutex_unlock(tmp->mutex_right);
 	}
@@ -38,18 +39,20 @@ void	ft_think_n_eat_even(t_philo *tmp)
 		printf("\e[32;1m%lld %d has taken a fork\e[0m\n", (ft_get_time() - tmp->data->ts), tmp->num);
 		pthread_mutex_unlock(tmp->mutex_print);
 		pthread_mutex_lock(tmp->mutex_right);
-		ft_print_is_eating(tmp);
+		if (ft_print_is_eating(tmp))
+			return (1);
 		pthread_mutex_unlock(tmp->mutex_right);
 		pthread_mutex_unlock(tmp->mutex_left);
 	}
 	ft_print_is_sleeping(tmp);
 	ft_print_is_thinking_even(tmp);
+	return (0);
 }
 
-void	ft_think_n_eat_odd(t_philo *tmp)
+int	ft_think_n_eat_odd(t_philo *tmp)
 {
 	struct timeval tv;
-
+	// fprintf(stderr, "hello dans think philo %d\n", tmp->num);
 	if (tmp->num % 2 == 1)
 	{
 		pthread_mutex_lock(tmp->mutex_right);
@@ -58,7 +61,8 @@ void	ft_think_n_eat_odd(t_philo *tmp)
 		gettimeofday(&tv, NULL);
 		printf("\e[32;1m%lld %d has taken a fork\e[0m\n", (ft_get_time() - tmp->data->ts), tmp->num);
 		pthread_mutex_unlock(tmp->mutex_print);
-		ft_print_is_eating(tmp);
+		if (ft_print_is_eating(tmp))
+			return (1);
 		pthread_mutex_unlock(tmp->mutex_left);
 		pthread_mutex_unlock(tmp->mutex_right);
 	}
@@ -70,32 +74,43 @@ void	ft_think_n_eat_odd(t_philo *tmp)
 		gettimeofday(&tv, NULL);
 		printf("\e[32;1m%lld %d has taken a fork\e[0m\n", (ft_get_time() - tmp->data->ts), tmp->num);
 		pthread_mutex_unlock(tmp->mutex_print);
-		ft_print_is_eating(tmp);
+		if (ft_print_is_eating(tmp))
+			return (1);
 		pthread_mutex_unlock(tmp->mutex_right);
 		pthread_mutex_unlock(tmp->mutex_left);
 	}
 	ft_print_is_sleeping(tmp);
 	ft_print_is_thinking_odd(tmp);
+	return (0);
 }
 
 void *routine(void *arg)
 {
 	t_philo *tmp;
-
 	tmp = (t_philo *)arg;
+	// fprintf(stderr, "HOOOOY %d \n", tmp->num);
 	while (ft_get_time() < tmp->start_time)
 	{
 		usleep(50);
 	}
+	fprintf(stderr, "%lld hello 1 philo %d\n",ft_get_time() - tmp->start_time, tmp->num);
 	if (tmp->num % 2 == 1)
 		usleep(100);
-	if (NB_PHILO % 2 == 0)
+	fprintf(stderr, "%lld hello 2 philo %d\n",ft_get_time() - tmp->start_time, tmp->num);
+	if (tmp->data->nb_philo % 2 == 0)
+	{
 		while (1)
-			ft_think_n_eat_even(tmp);
+		{
+			if(ft_think_n_eat_even(tmp))
+				return (NULL);
+		}
+	}
 	else
+	{
 		while (1)
-			ft_think_n_eat_odd(tmp);
-			
+			if (ft_think_n_eat_odd(tmp))
+				return (NULL);
+	}
 		
 	return (NULL);
 }
@@ -104,20 +119,24 @@ void	*ft_check_die(void *arg)
 {
 	int	i;
 	long long tmp_time;
+	int			nb_philo;
 	t_philo *tmp;
+	
 
 	tmp = (t_philo *)arg;
-	while (1)
+	nb_philo = tmp->data->nb_philo;
+	while (ft_get_time() < tmp->start_time)
 	{
-		if (tmp->data->bool_start != 0)
-			break;
+		usleep(50);
 	}
-	usleep(100);
+	usleep(200);
+	// fprintf(stderr, "Bonjour paris\n");
+	
 	while (1)
 	{
 		i = 0;
 		tmp = (t_philo *)arg;
-		while (i < NB_PHILO)
+		while (i < nb_philo)
 		{
 			tmp_time = ft_get_time();
 			if (tmp->count_eat >= MAX_EAT)
@@ -125,12 +144,13 @@ void	*ft_check_die(void *arg)
 				tmp->data->dead = 1;
 				return (NULL);
 			}
-			if (tmp_time - tmp->last_meal >= TIME_TO_DIE)
+			if (tmp_time - tmp->last_meal >= tmp->data->time_to_die)
 			{
+				// fprintf(stderr, "decalege de temps = %lld\n", tmp_time - tmp->last_meal);
 				tmp->data->dead = 1;
 				printf("\e[31;1m%lld %lld PHILO %d est dead\e\n", tmp_time - tmp->data->ts,tmp_time - tmp->last_meal, tmp->num);
-				fprintf(stderr, "LE MUTEX DE DROITE EST %d\n", pthread_mutex_trylock(tmp->mutex_right));
-				fprintf(stderr, "LE MUTEX DE GAUCHE EST %d\n", pthread_mutex_trylock(tmp->mutex_left));
+				// fprintf(stderr, "LE MUTEX DE DROITE EST %d\n", pthread_mutex_trylock(tmp->mutex_right));
+				// fprintf(sktderr, "LE MUTEX DE GAUCHE EST %d\n", pthread_mutex_trylock(tmp->mutex_left));
 				return (NULL);
 			}
 			
@@ -146,23 +166,30 @@ int	ft_create_thread(t_data *data)
 	t_philo *tmp;
 
 	i = 0;
-	data->pt = malloc(sizeof(pthread_t) * (NB_PHILO + 1));
+	data->pt = malloc(sizeof(pthread_t) * (data->nb_philo + 1));
 	if (!data->pt)
 		return (1);
-	data->pt[NB_PHILO] = 0;
+	data->pt[data->nb_philo] = 0;
 	tmp = data->philos;
 	
-	while (i < NB_PHILO)
+	while (i < data->nb_philo)
 	{
+		// fprintf(stderr, "HEEEEY\n");
 		if (pthread_create(&data->pt[i], NULL, &routine, tmp) != 0)
 			ft_putstr_fd("Gros pb de creation brrr brrr\n", 2);
 		tmp = tmp->next;
 		i++;
 	}
 	tmp = data->philos;
-	*(data->bool_start) = 1;
 	ft_check_die(tmp);
+	
 	i = 0;
+	while (i < data->nb_philo)
+	{
+		if (pthread_join(data->pt[i], NULL) != 0)
+			ft_putstr_fd("Gros pb de creation brrr brrr\n", 2);
+		i++;
+	}
 	return (0);
 }
 
@@ -281,7 +308,10 @@ int	main(int ac, char**av)
 	t_data data;
 	int		alive;
 	
-	data.philos = ft_init(NB_PHILO, &data, &alive);
+	if (ft_parsing(&data, ac, av))
+		return (1);
+	fprintf(stderr, "TEST %d\n", data.nb_philo);
+	data.philos = ft_init(data.nb_philo, &data, &alive);
 	if (ft_create_thread(&data) != 0)
 		return (1);
 	// free(data.forks);

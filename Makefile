@@ -2,6 +2,8 @@ SRCS += main.c
 SRCS += utils.c
 SRCS += free.c
 SRCS += print.c
+SRCS += parsing.c
+SRCS += ft_atoi.c
 
 OBJS = ${SRCS:.c=.o}
 
