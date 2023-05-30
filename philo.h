@@ -6,7 +6,7 @@
 /*   By: pbizien <pbizien@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/29 10:53:57 by pbizien           #+#    #+#             */
-/*   Updated: 2023/04/05 15:23:15 by pbizien          ###   ########.fr       */
+/*   Updated: 2023/05/30 18:30:20 by pbizien          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ typedef struct	s_philo
 	int				*left_fork;
 	long long		start_time;
 	int				count_eat;
+	int				counted;
 	struct s_philo	*next;
 	int				*alive;
 	struct s_data	*data;
