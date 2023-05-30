@@ -6,7 +6,7 @@
 /*   By: pbizien <pbizien@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/03/29 10:51:59 by pbizien           #+#    #+#             */
-/*   Updated: 2023/05/30 18:32:45 by pbizien          ###   ########.fr       */
+/*   Updated: 2023/05/30 18:36:51 by pbizien          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -159,8 +159,11 @@ void	*ft_check_die(void *arg)
 		while (i < nb_philo)
 		{
 			tmp_time = ft_get_time();
-			if (tmp->count_eat == tmp->data->min_eat)
+			if (tmp->count_eat == tmp->data->min_eat && !tmp->counted)
+			{
 				nb_full++;
+				tmp->counted = 1;
+			}
 			if (nb_full == nb_philo)
 			{ 
 				// fprintf(stderr, "hello nb philo ==");
